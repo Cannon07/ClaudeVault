@@ -1,4 +1,4 @@
-# Note-Taking MCP Server
+# ClaudeVault
 
 A powerful TypeScript-based Model Context Protocol (MCP) server that enables intelligent note-taking with Git synchronization. Built for seamless integration with Claude Desktop and multi-device workflows.
 
