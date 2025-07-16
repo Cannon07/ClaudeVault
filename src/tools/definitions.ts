@@ -105,3 +105,26 @@ export const deleteNoteTool: Tool = {
     required: ["identifier"],
   },
 };
+
+export const syncNotesTool: Tool = {
+  name: "sync_notes",
+  description:
+    "Sync notes with GitHub repository (pull, commit, push operations)",
+  inputSchema: {
+    type: "object",
+    properties: {
+      operation: {
+        type: "string",
+        description:
+          "Sync operation: 'full' (default), 'status', 'pull', 'commit', 'push'",
+        enum: ["full", "status", "pull", "commit", "push"],
+      },
+      message: {
+        type: "string",
+        description:
+          "Custom commit message (only used with 'commit' or 'full' operations)",
+      },
+    },
+    required: [],
+  },
+};

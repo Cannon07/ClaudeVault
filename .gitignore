@@ -2,6 +2,10 @@ node_modules/
 dist/
 data/
 *.log
-.env
 .DS_Store
 start-server.sh
+
+# Environment variables
+.env
+.env.local
+.env.*.local

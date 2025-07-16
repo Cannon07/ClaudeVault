@@ -15,6 +15,8 @@ import {
   handleListNotes,
   handleUpdateNote,
   handleDeleteNote,
+  handleSyncNotes,
+  syncNotesTool,
 } from "./tools/index.js";
 
 console.error("Starting MCP server...");
@@ -42,6 +44,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       listNotesTool,
       updateNoteTool,
       deleteNoteTool,
+      syncNotesTool,
     ],
   };
 });
@@ -101,6 +104,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             },
           ],
         };
+
+      case "sync_notes":
+        const syncResult = await handleSyncNotes(args || {});
+        return { content: [{ type: "text", text: syncResult }] };
 
       default:
         throw new Error(`Unknown tool: ${name}`);
