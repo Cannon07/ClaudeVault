@@ -7,18 +7,18 @@ const execAsync = promisify(exec);
 
 // Load environment variables manually from .env file
 function loadEnvVariables() {
-  const envPath = path.join(process.cwd(), '.env');
-  
+  const envPath = path.join(process.cwd(), ".env");
+
   if (fs.existsSync(envPath)) {
-    const envContent = fs.readFileSync(envPath, 'utf8');
-    const lines = envContent.split('\n');
-    
-    lines.forEach(line => {
+    const envContent = fs.readFileSync(envPath, "utf8");
+    const lines = envContent.split("\n");
+
+    lines.forEach((line) => {
       const trimmed = line.trim();
-      if (trimmed && !trimmed.startsWith('#')) {
-        const [key, ...valueParts] = trimmed.split('=');
+      if (trimmed && !trimmed.startsWith("#")) {
+        const [key, ...valueParts] = trimmed.split("=");
         if (key && valueParts.length > 0) {
-          const value = valueParts.join('=').trim();
+          const value = valueParts.join("=").trim();
           process.env[key.trim()] = value;
         }
       }
