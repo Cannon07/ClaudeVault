@@ -10,13 +10,15 @@ import {
   listNotesTool,
   updateNoteTool,
   deleteNoteTool,
+  syncNotesTool,
+  syncObsidianTool,
   handleAddNote,
   handleSearchNotes,
   handleListNotes,
   handleUpdateNote,
   handleDeleteNote,
   handleSyncNotes,
-  syncNotesTool,
+  handleObsidianSync,
 } from "./tools/index.js";
 
 console.error("Starting MCP server...");
@@ -45,6 +47,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       updateNoteTool,
       deleteNoteTool,
       syncNotesTool,
+      syncObsidianTool,
     ],
   };
 });
@@ -109,6 +112,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const syncResult = await handleSyncNotes(args || {});
         return { content: [{ type: "text", text: syncResult }] };
 
+      case "sync_obsidian":
+        return { content: [{ type: "text", text: handleObsidianSync(args || {}) }] };
       default:
         throw new Error(`Unknown tool: ${name}`);
     }

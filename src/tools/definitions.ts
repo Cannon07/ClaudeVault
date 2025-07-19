@@ -128,3 +128,24 @@ export const syncNotesTool: Tool = {
     required: [],
   },
 };
+
+export const syncObsidianTool: Tool = {
+  name: "sync_obsidian",
+  description: "Sync notes with Obsidian knowledge management app",
+  inputSchema: {
+    type: "object",
+    properties: {
+      operation: {
+        type: "string",
+        description:
+          "Sync operation: 'sync-all', 'sync-note', 'status', 'stats'",
+        enum: ["sync-all", "sync-note", "status", "stats"],
+      },
+      noteId: {
+        type: "string",
+        description: "Specific note ID to sync (for sync-note operation)",
+      },
+    },
+    required: [],
+  },
+};
