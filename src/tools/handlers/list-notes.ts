@@ -1,10 +1,7 @@
-import { getAllNotes } from "../../storage/index.js";
+import { getAllNotesFromVault } from "../../utils/obsidian-git-sync.js";
 
 export function handleListNotes(args: any): string {
-  const allNotes = getAllNotes().sort(
-    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
-  );
-
+  const allNotes = getAllNotesFromVault();
   const notes = args.limit ? allNotes.slice(0, args.limit) : allNotes;
 
   if (notes.length === 0) {

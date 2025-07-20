@@ -5,8 +5,9 @@ import {
   commitAndPushChanges,
   fullUnifiedSync,
   getUnifiedSyncStatus,
+  getAllNotesFromVault,
+  findNoteByIdInVault,
 } from "../../utils/obsidian-git-sync.js";
-import { getAllNotes, findNoteById } from "../../storage/index.js";
 
 export function handleUnifiedSync(args: any): Promise<string> {
   const { operation = "full", message, noteId } = args;
@@ -113,7 +114,7 @@ Usage: unified sync operation='save-and-push' noteId='note-1234567890'
 This operation saves a specific note to the vault and immediately pushes to Git.`;
   }
 
-  const note = findNoteById(noteId);
+  const note = findNoteByIdInVault(noteId);
   if (!note) {
     return `❌ **Note Not Found**
 
@@ -122,7 +123,7 @@ No note found with ID: ${noteId}
 Use search_notes to find the correct note ID.`;
   }
 
-  const allNotes = getAllNotes();
+  const allNotes = getAllNotesFromVault();
   const result = await saveNoteToVaultAndSync(note, allNotes, true);
 
   if (result.success) {
@@ -146,7 +147,7 @@ ${result.details}`;
 }
 
 async function handleFullUnifiedSync(): Promise<string> {
-  const notes = getAllNotes();
+  const notes = getAllNotesFromVault();
 
   if (notes.length === 0) {
     return `📝 **No Notes to Sync**
@@ -183,7 +184,7 @@ ${setupCheck.details}
 
 ${result.details}
 
-🌟 **What's New in v2.0:**
+🌟 **ClaudeVault v2.0:**
 - ⚡ Single repository workflow
 - 🔗 Enhanced smart linking
 - 📱 Faster cross-device sync

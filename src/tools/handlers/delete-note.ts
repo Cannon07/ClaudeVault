@@ -1,20 +1,20 @@
 import {
-  Note,
-  deleteNote,
-  findNoteById,
-  searchNotes,
-} from "../../storage/index.js";
+  findNoteByIdInVault,
+  searchNotesInVault,
+  deleteNoteFromVault,
+} from "../../utils/obsidian-git-sync.js";
+import { Note } from "../../types/note.js";
 
-export function handleDeleteNote(args: any): string {
+export async function handleDeleteNote(args: any): Promise<string> {
   const { identifier, confirm } = args;
 
   let targetNote: Note | null = null;
   let foundNotes: Note[] = [];
 
   if (identifier.startsWith("note-")) {
-    targetNote = findNoteById(identifier);
+    targetNote = findNoteByIdInVault(identifier);
   } else {
-    foundNotes = searchNotes(identifier);
+    foundNotes = searchNotesInVault(identifier);
     if (foundNotes.length === 1) {
       targetNote = foundNotes[0];
     } else if (foundNotes.length > 1) {
@@ -49,11 +49,15 @@ export function handleDeleteNote(args: any): string {
     return preview;
   }
 
-  const success = deleteNote(targetNote.id);
+  try {
+    const result = await deleteNoteFromVault(targetNote.id);
 
-  if (success) {
-    return `✓ Successfully deleted note "${targetNote.title}" (${targetNote.id})`;
-  } else {
-    return `✗ Failed to delete note "${targetNote.title}" (${targetNote.id})`;
+    if (result.success) {
+      return `✓ Successfully deleted note "${targetNote.title}" (${targetNote.id})`;
+    } else {
+      return `✗ Failed to delete note: ${result.message}`;
+    }
+  } catch (error: any) {
+    return `✗ Failed to delete note: ${error.message}`;
   }
 }

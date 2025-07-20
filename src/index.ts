@@ -11,8 +11,6 @@ import {
   listNotesTool,
   updateNoteTool,
   deleteNoteTool,
-  syncNotesTool,
-  syncObsidianTool,
   unifiedSyncTool,
   // Tool handlers
   handleAddNote,
@@ -20,8 +18,6 @@ import {
   handleListNotes,
   handleUpdateNote,
   handleDeleteNote,
-  handleSyncNotes,
-  handleObsidianSync,
   handleUnifiedSync,
 } from "./tools/index.js";
 
@@ -50,8 +46,6 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       listNotesTool,
       updateNoteTool,
       deleteNoteTool,
-      syncNotesTool,
-      syncObsidianTool,
       unifiedSyncTool,
     ],
   };
@@ -64,14 +58,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
     switch (name) {
       case "add_note":
-        return {
-          content: [
-            {
-              type: "text",
-              text: handleAddNote(args || {}),
-            },
-          ],
-        };
+        const addResult = await handleAddNote(args || {});
+        return { content: [{ type: "text", text: addResult }] };
 
       case "search_notes":
         return {
@@ -94,33 +82,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
 
       case "update_note":
-        return {
-          content: [
-            {
-              type: "text",
-              text: handleUpdateNote(args || {}),
-            },
-          ],
-        };
+        const updateResult = await handleUpdateNote(args || {});
+        return { content: [{ type: "text", text: updateResult }] };
 
       case "delete_note":
-        return {
-          content: [
-            {
-              type: "text",
-              text: handleDeleteNote(args || {}),
-            },
-          ],
-        };
-
-      case "sync_notes":
-        const syncResult = await handleSyncNotes(args || {});
-        return { content: [{ type: "text", text: syncResult }] };
-
-      case "sync_obsidian":
-        return {
-          content: [{ type: "text", text: handleObsidianSync(args || {}) }],
-        };
+        const deleteResult = await handleDeleteNote(args || {});
+        return { content: [{ type: "text", text: deleteResult }] };
 
       case "unified_sync":
         const unifiedResult = await handleUnifiedSync(args || {});

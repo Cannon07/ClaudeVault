@@ -1,11 +1,11 @@
-export { Note } from "../types/note.js";
-
 export {
-  saveNote,
-  getAllNotes,
-  searchNotes,
-  findNoteById,
-  findNotesBySearch,
-  updateNote,
-  deleteNote,
-} from "./notes-store.js";
+  getAllNotesFromVault,
+  findNoteByIdInVault,
+  searchNotesInVault,
+  addNoteToVault,
+  updateNoteInVault,
+  deleteNoteFromVault,
+  UnifiedSyncResult,
+} from "../utils/obsidian-git-sync.js";
+
+export { Note } from "../types/note.js";

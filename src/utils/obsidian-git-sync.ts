@@ -478,3 +478,242 @@ ${hasUncommittedChanges || hasUnpushedCommits ? "💡 Run unified sync to sync c
     };
   }
 }
+
+/**
+ * Load all notes from the Obsidian vault
+ */
+export function getAllNotesFromVault(): Note[] {
+  if (!OBSIDIAN_VAULT_PATH) {
+    return [];
+  }
+
+  const notesFolder = path.join(OBSIDIAN_VAULT_PATH, NOTES_SUBFOLDER);
+  if (!fs.existsSync(notesFolder)) {
+    return [];
+  }
+
+  try {
+    const files = fs
+      .readdirSync(notesFolder)
+      .filter((file) => file.endsWith(".md"));
+    const notes: Note[] = [];
+
+    for (const file of files) {
+      const filePath = path.join(notesFolder, file);
+      const content = fs.readFileSync(filePath, "utf8");
+
+      // Extract note data from frontmatter and content
+      const note = parseMarkdownToNote(content);
+      if (note) {
+        notes.push(note);
+      }
+    }
+
+    return notes.sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
+    );
+  } catch (error) {
+    console.error("Error reading notes from vault:", error);
+    return [];
+  }
+}
+
+/**
+ * Parse markdown file back to Note object
+ */
+function parseMarkdownToNote(markdown: string): Note | null {
+  try {
+    // Extract frontmatter
+    const frontmatterMatch = markdown.match(/^---\n([\s\S]*?)\n---/);
+    if (!frontmatterMatch) return null;
+
+    const frontmatter = frontmatterMatch[1];
+    const content = markdown.substring(frontmatterMatch[0].length);
+
+    // Parse frontmatter fields
+    const id = extractFrontmatterField(frontmatter, "id");
+    const created = extractFrontmatterField(frontmatter, "created");
+    const project = extractFrontmatterField(frontmatter, "project");
+    const category = extractFrontmatterField(frontmatter, "category");
+    const tagsStr = extractFrontmatterField(frontmatter, "tags");
+
+    // Extract title from markdown content
+    const titleMatch = content.match(/^#\s+(.+)$/m);
+    const title = titleMatch ? titleMatch[1] : "Untitled";
+
+    // Extract main content (everything between title and metadata section)
+    const mainContentMatch = content.match(/^#\s+.+\n\n([\s\S]*?)\n\n---/);
+    const mainContent = mainContentMatch ? mainContentMatch[1].trim() : "";
+
+    // Parse tags from frontmatter
+    let tags: string[] = [];
+    if (tagsStr) {
+      const tagsMatch = tagsStr.match(/\[(.*?)\]/);
+      if (tagsMatch) {
+        tags = tagsMatch[1]
+          .split(",")
+          .map((tag) => tag.trim().replace(/"/g, ""))
+          .filter((tag) => tag.length > 0);
+      }
+    }
+
+    if (!id || !created) return null;
+
+    return {
+      id,
+      title,
+      content: mainContent,
+      timestamp: created,
+      tags,
+      project: project ? project.replace(/"/g, "") : undefined,
+      category: category ? category.replace(/"/g, "") : undefined,
+    };
+  } catch (error) {
+    console.error("Error parsing markdown to note:", error);
+    return null;
+  }
+}
+
+/**
+ * Extract field value from frontmatter
+ */
+function extractFrontmatterField(
+  frontmatter: string,
+  field: string,
+): string | undefined {
+  const match = frontmatter.match(new RegExp(`^${field}:\\s*(.+)$`, "m"));
+  return match ? match[1].trim() : undefined;
+}
+
+/**
+ * Find note by ID from vault
+ */
+export function findNoteByIdInVault(id: string): Note | null {
+  const allNotes = getAllNotesFromVault();
+  return allNotes.find((note) => note.id === id) || null;
+}
+
+/**
+ * Search notes in vault
+ */
+export function searchNotesInVault(query: string): Note[] {
+  const allNotes = getAllNotesFromVault();
+  const lowerQuery = query.toLowerCase();
+
+  return allNotes.filter(
+    (note) =>
+      note.title.toLowerCase().includes(lowerQuery) ||
+      note.content.toLowerCase().includes(lowerQuery) ||
+      note.tags.some((tag) => tag.toLowerCase().includes(lowerQuery)) ||
+      note.project?.toLowerCase().includes(lowerQuery) ||
+      note.category?.toLowerCase().includes(lowerQuery),
+  );
+}
+
+/**
+ * Add new note to vault and sync
+ */
+export async function addNoteToVault(
+  noteData: Omit<Note, "id" | "timestamp">,
+): Promise<UnifiedSyncResult> {
+  const note: Note = {
+    id: `note-${Date.now()}`,
+    timestamp: new Date().toISOString(),
+    ...noteData,
+  };
+
+  const allNotes = getAllNotesFromVault();
+  return await saveNoteToVaultAndSync(
+    note,
+    [...allNotes, note],
+    AUTO_SYNC_ON_SAVE,
+  );
+}
+
+/**
+ * Update existing note in vault
+ */
+export async function updateNoteInVault(
+  id: string,
+  updates: Partial<Note>,
+): Promise<UnifiedSyncResult> {
+  const existingNote = findNoteByIdInVault(id);
+  if (!existingNote) {
+    return {
+      success: false,
+      message: "Note not found",
+      details: `No note found with ID: ${id}`,
+    };
+  }
+
+  const updatedNote: Note = {
+    ...existingNote,
+    ...updates,
+    id: existingNote.id, // Ensure ID doesn't change
+    timestamp: existingNote.timestamp, // Keep original timestamp
+  };
+
+  const allNotes = getAllNotesFromVault();
+  const updatedNotes = allNotes.map((note) =>
+    note.id === id ? updatedNote : note,
+  );
+
+  return await saveNoteToVaultAndSync(
+    updatedNote,
+    updatedNotes,
+    AUTO_SYNC_ON_SAVE,
+  );
+}
+
+/**
+ * Delete note from vault
+ */
+export async function deleteNoteFromVault(
+  id: string,
+): Promise<UnifiedSyncResult> {
+  const existingNote = findNoteByIdInVault(id);
+  if (!existingNote) {
+    return {
+      success: false,
+      message: "Note not found",
+      details: `No note found with ID: ${id}`,
+    };
+  }
+
+  try {
+    // Remove the markdown file
+    const filename = `${sanitizeFilename(existingNote.title)}.md`;
+    const filePath = path.join(OBSIDIAN_VAULT_PATH!, NOTES_SUBFOLDER, filename);
+
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
+    // Auto-sync if enabled
+    if (AUTO_SYNC_ON_SAVE) {
+      const gitResult = await commitAndPushChanges(
+        `Delete note: ${existingNote.title}`,
+      );
+      if (!gitResult.success) {
+        return {
+          success: false,
+          message: "Note deleted locally but Git sync failed",
+          details: gitResult.details,
+        };
+      }
+    }
+
+    return {
+      success: true,
+      message: `Note "${existingNote.title}" deleted successfully`,
+      details: `Removed file: ${filename}`,
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      message: "Failed to delete note",
+      details: error.message,
+    };
+  }
+}

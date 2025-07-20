@@ -1,11 +1,11 @@
 import {
-  Note,
-  updateNote,
-  findNoteById,
-  searchNotes,
-} from "../../storage/index.js";
+  findNoteByIdInVault,
+  searchNotesInVault,
+  updateNoteInVault,
+} from "../../utils/obsidian-git-sync.js";
+import { Note } from "../../types/note.js";
 
-export function handleUpdateNote(args: any): string {
+export async function handleUpdateNote(args: any): Promise<string> {
   const {
     identifier,
     confirm,
@@ -18,13 +18,16 @@ export function handleUpdateNote(args: any): string {
     category,
   } = args;
 
+  // Find the note to update
   let targetNote: Note | null = null;
   let foundNotes: Note[] = [];
 
+  // Try to find by ID first
   if (identifier.startsWith("note-")) {
-    targetNote = findNoteById(identifier);
+    targetNote = findNoteByIdInVault(identifier);
   } else {
-    foundNotes = searchNotes(identifier);
+    // Search by content
+    foundNotes = searchNotesInVault(identifier);
     if (foundNotes.length === 1) {
       targetNote = foundNotes[0];
     } else if (foundNotes.length > 1) {
@@ -45,6 +48,7 @@ export function handleUpdateNote(args: any): string {
     return `No note found matching "${identifier}". Use search_notes to find the right note ID.`;
   }
 
+  // Prepare updates
   const updates: Partial<Note> = {};
 
   if (title !== undefined) updates.title = title;
@@ -52,9 +56,11 @@ export function handleUpdateNote(args: any): string {
   if (project !== undefined) updates.project = project;
   if (category !== undefined) updates.category = category;
 
+  // Handle tags
   if (tags !== undefined) {
     updates.tags = tags;
   } else {
+    // Handle add/remove tags
     let newTags = [...targetNote.tags];
 
     if (add_tags) {
@@ -74,10 +80,12 @@ export function handleUpdateNote(args: any): string {
     }
   }
 
+  // If no updates provided
   if (Object.keys(updates).length === 0) {
     return `No updates specified for note "${targetNote.title}" (${targetNote.id}). Specify title, content, tags, project, or category to update.`;
   }
 
+  // Show preview if not confirmed
   if (!confirm) {
     const preview =
       `**Preview of changes to "${targetNote.title}" (${targetNote.id}):**\n\n` +
@@ -101,11 +109,16 @@ export function handleUpdateNote(args: any): string {
     return preview;
   }
 
-  const success = updateNote(targetNote.id, updates);
+  // Apply the update
+  try {
+    const result = await updateNoteInVault(targetNote.id, updates);
 
-  if (success) {
-    return `✓ Successfully updated note "${targetNote.title}" (${targetNote.id})`;
-  } else {
-    return `✗ Failed to update note "${targetNote.title}" (${targetNote.id})`;
+    if (result.success) {
+      return `✓ Successfully updated note "${targetNote.title}" (${targetNote.id})`;
+    } else {
+      return `✗ Failed to update note: ${result.message}`;
+    }
+  } catch (error: any) {
+    return `✗ Failed to update note: ${error.message}`;
   }
 }

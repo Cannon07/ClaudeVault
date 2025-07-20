@@ -1,16 +1,21 @@
-import { Note, saveNote } from "../../storage/index.js";
+import { addNoteToVault } from "../../utils/obsidian-git-sync.js";
 
-export function handleAddNote(args: any): string {
-  const note: Note = {
-    id: `note-${Date.now()}`,
-    title: args.title,
-    content: args.content,
-    timestamp: new Date().toISOString(),
-    tags: args.tags || [],
-    project: args.project,
-    category: args.category,
-  };
+export async function handleAddNote(args: any): Promise<string> {
+  try {
+    const result = await addNoteToVault({
+      title: args.title,
+      content: args.content,
+      tags: args.tags || [],
+      project: args.project,
+      category: args.category,
+    });
 
-  saveNote(note);
-  return `Note "${note.title}" saved successfully with ID: ${note.id}`;
+    if (result.success) {
+      return `Note "${args.title}" saved successfully with ID: ${result.details}`;
+    } else {
+      return `Failed to save note: ${result.message}`;
+    }
+  } catch (error: any) {
+    return `Error creating note: ${error.message}`;
+  }
 }

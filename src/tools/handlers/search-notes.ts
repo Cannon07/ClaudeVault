@@ -1,7 +1,7 @@
-import { searchNotes } from "../../storage/index.js";
+import { searchNotesInVault } from "../../utils/obsidian-git-sync.js";
 
 export function handleSearchNotes(args: any): string {
-  const results = searchNotes(args.query);
+  const results = searchNotesInVault(args.query);
   if (results.length === 0) {
     return `No notes found matching "${args.query}"`;
   }

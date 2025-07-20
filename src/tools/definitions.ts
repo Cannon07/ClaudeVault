@@ -106,50 +106,6 @@ export const deleteNoteTool: Tool = {
   },
 };
 
-export const syncNotesTool: Tool = {
-  name: "sync_notes",
-  description:
-    "Sync notes with GitHub repository (pull, commit, push operations)",
-  inputSchema: {
-    type: "object",
-    properties: {
-      operation: {
-        type: "string",
-        description:
-          "Sync operation: 'full' (default), 'status', 'pull', 'commit', 'push'",
-        enum: ["full", "status", "pull", "commit", "push"],
-      },
-      message: {
-        type: "string",
-        description:
-          "Custom commit message (only used with 'commit' or 'full' operations)",
-      },
-    },
-    required: [],
-  },
-};
-
-export const syncObsidianTool: Tool = {
-  name: "sync_obsidian",
-  description: "Sync notes with Obsidian knowledge management app",
-  inputSchema: {
-    type: "object",
-    properties: {
-      operation: {
-        type: "string",
-        description:
-          "Sync operation: 'sync-all', 'sync-note', 'status', 'stats'",
-        enum: ["sync-all", "sync-note", "status", "stats"],
-      },
-      noteId: {
-        type: "string",
-        description: "Specific note ID to sync (for sync-note operation)",
-      },
-    },
-    required: [],
-  },
-};
-
 export const unifiedSyncTool: Tool = {
   name: "unified_sync",
   description:
