@@ -149,3 +149,29 @@ export const syncObsidianTool: Tool = {
     required: [],
   },
 };
+
+export const unifiedSyncTool: Tool = {
+  name: "unified_sync",
+  description:
+    "Unified sync for ClaudeVault notes with direct Git integration (v2.0)",
+  inputSchema: {
+    type: "object",
+    properties: {
+      operation: {
+        type: "string",
+        description:
+          "Sync operation: 'full', 'status', 'pull', 'push', 'save-and-push'",
+        enum: ["full", "status", "pull", "push", "save-and-push"],
+      },
+      message: {
+        type: "string",
+        description: "Custom commit message (for push operations)",
+      },
+      noteId: {
+        type: "string",
+        description: "Specific note ID (for save-and-push operation)",
+      },
+    },
+    required: [],
+  },
+};

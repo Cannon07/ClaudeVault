@@ -5,6 +5,7 @@ import {
   CallToolRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 import {
+  // Tool definitions
   addNoteTool,
   searchNotesTool,
   listNotesTool,
@@ -12,6 +13,8 @@ import {
   deleteNoteTool,
   syncNotesTool,
   syncObsidianTool,
+  unifiedSyncTool,
+  // Tool handlers
   handleAddNote,
   handleSearchNotes,
   handleListNotes,
@@ -19,6 +22,7 @@ import {
   handleDeleteNote,
   handleSyncNotes,
   handleObsidianSync,
+  handleUnifiedSync,
 } from "./tools/index.js";
 
 console.error("Starting MCP server...");
@@ -48,6 +52,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       deleteNoteTool,
       syncNotesTool,
       syncObsidianTool,
+      unifiedSyncTool,
     ],
   };
 });
@@ -113,7 +118,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         return { content: [{ type: "text", text: syncResult }] };
 
       case "sync_obsidian":
-        return { content: [{ type: "text", text: handleObsidianSync(args || {}) }] };
+        return {
+          content: [{ type: "text", text: handleObsidianSync(args || {}) }],
+        };
+
+      case "unified_sync":
+        const unifiedResult = await handleUnifiedSync(args || {});
+        return { content: [{ type: "text", text: unifiedResult }] };
+
       default:
         throw new Error(`Unknown tool: ${name}`);
     }
