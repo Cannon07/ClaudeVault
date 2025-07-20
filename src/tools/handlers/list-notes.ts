@@ -1,4 +1,4 @@
-import { getAllNotesFromVault } from "../../utils/obsidian-git-sync.js";
+import { getAllNotesFromVault } from "../../utils/unified-sync.js";
 
 export function handleListNotes(args: any): string {
   const allNotes = getAllNotesFromVault();

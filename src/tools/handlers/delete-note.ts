@@ -2,7 +2,7 @@ import {
   findNoteByIdInVault,
   searchNotesInVault,
   deleteNoteFromVault,
-} from "../../utils/obsidian-git-sync.js";
+} from "../../utils/unified-sync.js";
 import { Note } from "../../types/note.js";
 
 export async function handleDeleteNote(args: any): Promise<string> {

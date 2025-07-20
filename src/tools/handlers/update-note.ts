@@ -2,7 +2,7 @@ import {
   findNoteByIdInVault,
   searchNotesInVault,
   updateNoteInVault,
-} from "../../utils/obsidian-git-sync.js";
+} from "../../utils/unified-sync.js";
 import { Note } from "../../types/note.js";
 
 export async function handleUpdateNote(args: any): Promise<string> {

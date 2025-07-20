@@ -7,7 +7,7 @@ import {
   getUnifiedSyncStatus,
   getAllNotesFromVault,
   findNoteByIdInVault,
-} from "../../utils/obsidian-git-sync.js";
+} from "../../utils/unified-sync.js";
 
 export function handleUnifiedSync(args: any): Promise<string> {
   const { operation = "full", message, noteId } = args;

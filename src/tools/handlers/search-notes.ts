@@ -1,4 +1,4 @@
-import { searchNotesInVault } from "../../utils/obsidian-git-sync.js";
+import { searchNotesInVault } from "../../utils/unified-sync.js";
 
 export function handleSearchNotes(args: any): string {
   const results = searchNotesInVault(args.query);

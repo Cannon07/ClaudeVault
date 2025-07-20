@@ -1,4 +1,4 @@
-import { addNoteToVault } from "../../utils/obsidian-git-sync.js";
+import { addNoteToVault } from "../../utils/unified-sync.js";
 
 export async function handleAddNote(args: any): Promise<string> {
   try {
