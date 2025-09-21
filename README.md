@@ -1,6 +1,6 @@
 # ClaudeVault
 
-A powerful TypeScript-based Model Context Protocol (MCP) server that enables intelligent note-taking with Git synchronization. Built for seamless integration with Claude Desktop and multi-device workflows.
+A powerful TypeScript-based Model Context Protocol (MCP) server that enables intelligent note-taking with Obsidian Vault integration and Git synchronization. Built for seamless integration with Claude Desktop and cross-device knowledge management workflows.
 
 ## 🌟 Features
 
@@ -11,16 +11,25 @@ A powerful TypeScript-based Model Context Protocol (MCP) server that enables int
 - **Preview and confirmation** system for safe updates and deletions
 - **Unique ID generation** with timestamp-based identification
 
-### 🔄 Git Synchronization
-- **Multi-device sync** across work and personal machines
-- **Automatic Git operations** (pull, commit, push)
-- **Custom commit messages** and branch configuration
-- **Flexible sync modes**: status check, pull-only, commit-only, push-only, full sync
+### 🗂️ Obsidian Vault Integration
+- **Markdown file storage** in your Obsidian vault
+- **Smart note linking** with automatic relationship detection
+- **Cross-note connections** for enhanced knowledge graphs
+- **Subfolder organization** for clean vault structure
+- **Direct Obsidian compatibility** for seamless editing
+
+### 🔄 Unified Git Synchronization (v2.0)
+- **Single repository workflow** with direct vault integration
+- **Enhanced smart linking** between related notes
+- **Faster cross-device sync** with optimized Git operations
+- **Multiple sync strategies**: full, status, pull, push, save-and-push
 - **Conflict-free operations** with proper Git workflow
+- **Batch operations** for efficient bulk syncing
+- **Emergency sync** for conflict resolution
 
 ### ⚙️ Professional Configuration
 - **Environment variable support** for flexible deployment
-- **Configurable repository paths** and Git settings
+- **Configurable vault paths** and Git settings
 - **Clean modular architecture** with separated concerns
 - **TypeScript implementation** with full type safety
 - **Production-ready error handling** and logging
@@ -29,15 +38,16 @@ A powerful TypeScript-based Model Context Protocol (MCP) server that enables int
 
 ### Prerequisites
 - Node.js 18+ 
-- Git configured with GitHub access
+- Git configured with remote repository access
+- Obsidian vault (local directory)
 - Claude Desktop application
 
 ### Installation
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/note-taking-mcp-server.git
-   cd note-taking-mcp-server
+   git clone https://github.com/Cannon07/ClaudeVault.git
+   cd ClaudeVault
    ```
 
 2. **Install dependencies**
@@ -48,19 +58,22 @@ A powerful TypeScript-based Model Context Protocol (MCP) server that enables int
 3. **Configure environment**
    ```bash
    cp .env.example .env
-   # Edit .env with your settings
+   # Edit .env with your Obsidian vault path
    ```
 
-4. **Set up your notes repository**
+4. **Set up your Obsidian vault with Git**
    ```bash
-   # Create a private repository on GitHub for your notes
-   git clone https://github.com/yourusername/personal-knowledge-base.git
-   cd personal-knowledge-base
-   mkdir notes
-   echo "# Personal Knowledge Base" > README.md
+   # Navigate to your Obsidian vault
+   cd /path/to/your/obsidian-vault
+   
+   # Initialize Git if not already done
+   git init
+   git remote add origin https://github.com/yourusername/your-vault-repo.git
+   
+   # Create initial commit
    git add .
-   git commit -m "Initial setup"
-   git push
+   git commit -m "Initial vault setup"
+   git push -u origin main
    ```
 
 5. **Build the project**
@@ -74,22 +87,18 @@ A powerful TypeScript-based Model Context Protocol (MCP) server that enables int
    ```json
    {
      "mcpServers": {
-       "note-taking": {
-         "command": "/path/to/your/note-taking-mcp-server/start-server.sh"
+       "claudevault": {
+         "command": "node",
+         "args": ["/path/to/ClaudeVault/dist/index.js"],
+         "env": {
+           "OBSIDIAN_VAULT_PATH": "/path/to/your/obsidian-vault"
+         }
        }
      }
    }
    ```
 
-7. **Create start script**
-   ```bash
-   echo '#!/bin/bash
-   cd /path/to/your/note-taking-mcp-server
-   exec node dist/index.js' > start-server.sh
-   chmod +x start-server.sh
-   ```
-
-8. **Restart Claude Desktop** and start taking notes!
+7. **Restart Claude Desktop** and start taking smart notes!
 
 ## 📁 Project Structure
 
@@ -98,9 +107,6 @@ src/
 ├── index.ts                # Main MCP server
 ├── types/
 │   └── note.ts             # Note interface and types
-├── storage/
-│   ├── index.ts            # Storage API exports
-│   └── notes-store.ts      # Core storage operations
 ├── tools/
 │   ├── index.ts            # Tools API exports
 │   ├── definitions.ts      # MCP tool definitions
@@ -110,9 +116,16 @@ src/
 │       ├── list-notes.ts
 │       ├── update-note.ts
 │       ├── delete-note.ts
-│       └── sync-notes.ts
+│       └── unified-sync.ts
 └── utils/
-    └── git-sync.ts         # Git synchronization utilities
+    ├── unified-sync.ts     # Main sync orchestration
+    ├── vault/              # Obsidian vault operations
+    │   ├── vault-operations.ts
+    │   ├── markdown-parser.ts
+    │   └── note-linking.ts
+    └── git/                # Git synchronization
+        ├── git-operations.ts
+        └── sync-strategies.ts
 ```
 
 ## 🛠️ Configuration
@@ -120,35 +133,42 @@ src/
 ### Environment Variables (.env)
 
 ```bash
-# Notes Repository Configuration
-NOTES_REPO_PATH=/path/to/your/personal-knowledge-base
+# Obsidian Vault Configuration
+OBSIDIAN_VAULT_PATH=/path/to/your/obsidian-vault
+OBSIDIAN_SUBFOLDER=ClaudeVault
 
 # Git Configuration
 DEFAULT_BRANCH=main
-AUTO_SYNC=false
-SYNC_INTERVAL_MINUTES=5
-
-# MCP Server Configuration
-SERVER_NAME=note-taking-mcp
-SERVER_VERSION=1.0.0
-DATA_SUBFOLDER=notes
+AUTO_SYNC_ON_SAVE=false
+GIT_TIMEOUT=15000
 ```
 
 ### Note Structure
 
-Each note is stored as a JSON file with the following structure:
+Notes are stored as Markdown files in your Obsidian vault with the following metadata:
 
-```json
-{
-  "id": "note-1234567890123",
-  "title": "Note Title",
-  "content": "Note content with full markdown support",
-  "timestamp": "2025-01-15T10:30:00.000Z",
-  "tags": ["tag1", "tag2"],
-  "project": "project-name",
-  "category": "category-name"
-}
+```markdown
+# Note Title
+
+Tags: #tag1 #tag2  
+Project: project-name  
+Category: category-name  
+
+Your note content here with full Markdown support...
+
+## Related Notes
+- [[Related Note 1]]
+- [[Related Note 2]]
 ```
+
+Each note includes:
+- **Unique ID**: Generated timestamp-based identifier
+- **Title**: Human-readable note title
+- **Content**: Full Markdown content with Obsidian features
+- **Tags**: Flexible tagging system for organization
+- **Project**: Optional project association
+- **Category**: Optional categorization
+- **Related Notes**: Auto-generated cross-references
 
 ## 💬 Usage Examples
 
@@ -171,34 +191,67 @@ Each note is stored as a JSON file with the following structure:
 "Delete note about 'old project requirements'"
 ```
 
-### Git Synchronization
+### Unified Git Synchronization (v2.0)
 
 ```
 # Check sync status
 "Sync notes with operation 'status'"
 
-# Full synchronization
-"Sync notes"
+# Full unified synchronization
+"Sync notes with operation 'full'"
 
 # Pull latest changes only
 "Sync notes with operation 'pull'"
 
-# Commit with custom message
-"Sync notes with operation 'commit' and message 'Daily standup notes'"
+# Commit and push with custom message
+"Sync notes with operation 'push' and message 'Daily standup notes'"
 
-# Push only
-"Sync notes with operation 'push'"
+# Save specific note and push
+"Sync notes with operation 'save-and-push' and noteId 'note-1234567890123'"
 ```
+
+### Advanced Operations
+
+```
+# Health check
+"Sync notes with operation 'status'" # Shows vault health and Git status
+
+# Get vault information
+"List my last 5 notes"              # Shows vault statistics in output
+
+# Find related notes (automatic in note creation)
+# ClaudeVault automatically detects and links related notes when creating/updating
+```
+
+### Available Tools
+
+- **`add_note`**: Create new notes with metadata and automatic linking
+- **`search_notes`**: Intelligent search across all note content and metadata  
+- **`list_notes`**: List notes with optional limits
+- **`update_note`**: Modify existing notes with preview/confirmation
+- **`delete_note`**: Remove notes with safety confirmations
+- **`unified_sync`**: Advanced Git synchronization with multiple strategies
 
 ## 🔄 Multi-Device Workflow
 
-1. **Primary Setup**: Set up the MCP server on your main machine
-2. **Secondary Setup**: Clone and configure on additional machines
-3. **Sync Workflow**: 
+### Obsidian + ClaudeVault Integration
+
+1. **Primary Setup**: Configure ClaudeVault with your main Obsidian vault
+2. **Git Integration**: Your vault is backed by a Git repository
+3. **Smart Linking**: ClaudeVault automatically creates connections between related notes
+4. **Cross-Device Sync**: 
    - Start work session: `sync notes operation='pull'`
-   - Work with notes normally
-   - End session: `sync notes` (full sync)
-4. **Automatic Sync**: Notes stay synchronized across all devices
+   - Use ClaudeVault for intelligent note creation and management
+   - Use Obsidian for advanced editing, graph view, and plugins
+   - End session: `sync notes operation='full'` (unified sync)
+
+### Workflow Benefits
+
+- **Best of Both Worlds**: AI-powered note management + Obsidian's powerful features
+- **Automatic Linking**: ClaudeVault intelligently connects related concepts
+- **Git Backup**: Full version control and cross-device synchronization
+- **Markdown Files**: Human-readable, future-proof storage format
+- **Graph View**: Visualize knowledge connections in Obsidian
 
 ## 🏗️ Architecture
 
@@ -207,16 +260,25 @@ Each note is stored as a JSON file with the following structure:
 - Implements standard MCP tool definitions and handlers
 - Supports both synchronous and asynchronous operations
 
-### Storage Layer
-- JSON file-based storage for simplicity and portability
-- Git repository for backup, versioning, and synchronization
-- Configurable storage location via environment variables
+### Obsidian Vault Layer
+- **Markdown file storage** in structured Obsidian vault
+- **Smart note linking** with automatic relationship detection
+- **Vault operations** for reading, writing, and organizing notes
+- **Configurable subfolder** structure for clean organization
 
-### Git Integration
-- Automatic pull before operations to prevent conflicts
-- Smart commit detection (only commits when changes exist)
-- Configurable branch and commit message handling
-- Error handling for common Git scenarios
+### Unified Git Synchronization (v2.0)
+- **Single repository workflow** with direct vault integration
+- **Enhanced sync strategies**: full, pull, push, save-and-push
+- **Intelligent conflict resolution** and emergency sync
+- **Batch operations** for efficient bulk synchronization
+- **Cross-device compatibility** with automatic Git operations
+
+### Key Components
+- **Unified Sync Engine**: Central orchestration of all sync operations
+- **Vault Operations**: Direct Obsidian vault file management
+- **Git Strategies**: Multiple sync approaches for different use cases
+- **Note Linking**: Automatic relationship detection and cross-referencing
+- **Markdown Parser**: Bidirectional conversion between notes and Markdown
 
 ## 🚀 Development
 
@@ -224,7 +286,7 @@ Each note is stored as a JSON file with the following structure:
 
 ```bash
 npm run build    # Compile TypeScript to JavaScript
-npm run dev      # Run server in development mode
+npm run dev      # Run server in development mode with tsx
 npm start        # Run compiled server
 ```
 
@@ -236,12 +298,31 @@ npm start        # Run compiled server
 4. Add case in main server switch statement
 5. Build and test
 
+### Architecture Overview
+
+- **Unified Sync**: Central sync orchestration in `utils/unified-sync.ts`
+- **Vault Operations**: Obsidian file management in `utils/vault/`
+- **Git Strategies**: Multiple sync approaches in `utils/git/`
+- **Tool Handlers**: Individual MCP tool implementations in `tools/handlers/`
+
+### Development Notes
+
+**Current Known Issues:**
+- TypeScript configuration needs updates for Node.js types and MCP SDK imports
+- Build requires proper tsconfig.json with Node.js lib support
+
+**Utility Functions Available (not exposed as tools):**
+- `healthCheck()`: System health verification
+- `getVaultInfo()`: Vault configuration and statistics
+- `findRelatedNotes()`: Automatic note relationship detection
+
 ## 🔒 Security & Privacy
 
-- **Private notes repository**: Keep personal notes separate from code
+- **Private Obsidian vault**: Keep personal notes in your local Obsidian vault
 - **Environment-based configuration**: No sensitive data in source code
-- **Git authentication**: Uses your existing GitHub authentication
-- **Local-first**: Notes stored locally with cloud backup
+- **Git authentication**: Uses your existing Git authentication
+- **Local-first**: Notes stored locally in Markdown with optional cloud backup
+- **Open format**: Human-readable Markdown files, never locked in proprietary formats
 
 ## 🤝 Contributing
 
@@ -265,4 +346,4 @@ npm start        # Run compiled server
 
 ---
 
-**Built with ❤️ for developers who love taking smart notes**
+**ClaudeVault v2.0** - Built with ❤️ for developers who love taking smart notes in Obsidian
