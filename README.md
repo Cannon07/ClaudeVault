@@ -214,14 +214,23 @@ Each note includes:
 
 ```
 # Health check
-"Check vault health and configuration"
+"Sync notes with operation 'status'" # Shows vault health and Git status
 
 # Get vault information
-"Show vault configuration and statistics"
+"List my last 5 notes"              # Shows vault statistics in output
 
-# Find related notes
-"Find notes related to 'machine learning'"
+# Find related notes (automatic in note creation)
+# ClaudeVault automatically detects and links related notes when creating/updating
 ```
+
+### Available Tools
+
+- **`add_note`**: Create new notes with metadata and automatic linking
+- **`search_notes`**: Intelligent search across all note content and metadata  
+- **`list_notes`**: List notes with optional limits
+- **`update_note`**: Modify existing notes with preview/confirmation
+- **`delete_note`**: Remove notes with safety confirmations
+- **`unified_sync`**: Advanced Git synchronization with multiple strategies
 
 ## 🔄 Multi-Device Workflow
 
@@ -296,6 +305,17 @@ npm start        # Run compiled server
 - **Git Strategies**: Multiple sync approaches in `utils/git/`
 - **Tool Handlers**: Individual MCP tool implementations in `tools/handlers/`
 
+### Development Notes
+
+**Current Known Issues:**
+- TypeScript configuration needs updates for Node.js types and MCP SDK imports
+- Build requires proper tsconfig.json with Node.js lib support
+
+**Utility Functions Available (not exposed as tools):**
+- `healthCheck()`: System health verification
+- `getVaultInfo()`: Vault configuration and statistics
+- `findRelatedNotes()`: Automatic note relationship detection
+
 ## 🔒 Security & Privacy
 
 - **Private Obsidian vault**: Keep personal notes in your local Obsidian vault
@@ -326,4 +346,4 @@ npm start        # Run compiled server
 
 ---
 
-**Built with ❤️ for developers who love taking smart notes**
+**ClaudeVault v2.0** - Built with ❤️ for developers who love taking smart notes in Obsidian
